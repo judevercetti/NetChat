@@ -9,6 +9,10 @@ class LoginDialog(QDialog):
         uic.loadUi('UI/login.ui', self)
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
 
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.username_lineedit.textChanged.connect(self.checkName)
 
         self.show()
 
+    def checkName(self, txt):
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True if len(txt) > 0 else False)

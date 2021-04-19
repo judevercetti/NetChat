@@ -18,7 +18,7 @@ from qt_material import apply_stylesheet
 class NetCrawler(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi("MainUI.ui", self)
+        uic.loadUi("UI/MainUI.ui", self)
         self.titlebar_layout.addWidget(TitleBar(self))
 
 
@@ -36,8 +36,14 @@ class NetCrawler(QMainWindow):
 
         # self.show()
         self.login = LoginDialog()
-        self.login.buttonBox.accepted.connect(self.show)
+        self.login.buttonBox.accepted.connect(self.setupApp)
         self.login.buttonBox.rejected.connect(qApp.quit)
+
+    
+    def setupApp(self):
+        self.currentuser = self.login.username_lineedit.text()
+        print(self.currentuser)
+        self.show()
 
 
 
