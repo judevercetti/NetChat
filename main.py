@@ -12,15 +12,18 @@ from login import LoginDialog
 
 from qt_material import apply_stylesheet
 
+import platform
 # import threading
 
 
 class NetCrawler(QMainWindow):
+    current_user = {}
     def __init__(self):
         super().__init__()
         uic.loadUi("UI/MainUI.ui", self)
         self.titlebar_layout.addWidget(TitleBar(self))
 
+        self.current_user['uid'] = platform.node()
 
         self.messages = Messages(self)
         # network = Network()
@@ -41,8 +44,8 @@ class NetCrawler(QMainWindow):
 
     
     def setupApp(self):
-        self.currentuser = self.login.username_lineedit.text()
-        print(self.currentuser)
+        self.current_user['username'] = self.login.username_lineedit.text()
+        print(self.current_user['uid'])
         self.show()
 
 

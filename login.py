@@ -15,4 +15,4 @@ class LoginDialog(QDialog):
         self.show()
 
     def checkName(self, txt):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True if len(txt) > 0 else False)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True if len(txt) > 2 else False)
