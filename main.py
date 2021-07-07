@@ -1,46 +1,61 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5 import uic
+from PyQt5 import uic, sip
 
 from views import UI_Window
 from cam import Camera
-from network import Network, Client, Server
-from MainUI import Ui_MainWindow
+from network import NetFinder, Server, OnlineFinder
 from CustomListViews import Messages
+from dialogs import *
 from TopBar import TitleBar
 from login import LoginDialog
 
 from qt_material import apply_stylesheet
 
 import platform
+import UI
 # import threading
 
 
 class NetCrawler(QMainWindow):
     current_user = {}
+    online_users = {}
+
     def __init__(self):
         super().__init__()
         uic.loadUi("UI/MainUI.ui", self)
-        self.titlebar_layout.addWidget(TitleBar(self))
+        # self.titlebar_layout.addWidget(TitleBar(self))
 
         self.current_user['uid'] = platform.node()
 
         self.messages = Messages(self)
-        # network = Network()
-        # network.startClient()
-        # network.getMessage()
-
-        self.thread = QThread()
-        self.server = Server()
-        self.server.moveToThread(self.thread)
-        self.thread.started.connect(self.server.run)
-        self.server.new_message.connect(self.messages.getMsg)
-        self.thread.start()
-
-        # self.show()
+        
+        #######################################     LOG IN      ###########################################
         self.login = LoginDialog()
         self.login.buttonBox.accepted.connect(self.setupApp)
         self.login.buttonBox.rejected.connect(qApp.quit)
+
+
+        #######################################     SERVER      ###########################################
+        # self.thread_server = QThread()
+        # self.server = Server()
+        # self.server.moveToThread(self.thread_server)
+        # self.thread_server.started.connect(self.server.run)
+        # self.server.new_message.connect(self.messages.getMsg)
+        # self.thread_server.start()
+
+        
+        #######################################     ONLINE FINDER      ###########################################
+        self.online_dialog = OnlineDialog(self)
+        self.onlineusers_button.clicked.connect(self.online_dialog.show)
+        self.online_dialog.open_chat.connect(self.messages.fillPaperList)
+
+        self.thread_finder = QThread()
+        self.online_finder = NetFinder()
+        self.online_finder.moveToThread(self.thread_finder)
+        self.thread_finder.started.connect(self.online_finder.run)
+        self.online_finder.new_client.connect(self.online_dialog.addOnlineUser)
+        self.thread_finder.start()
 
     
     def setupApp(self):

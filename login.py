@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, uic
+from PyQt5 import QtCore, uic, sip
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import * #QLabel, QWidget, QHBoxLayout, QVBoxLayout, QListWidgetItem
 
@@ -15,4 +15,4 @@ class LoginDialog(QDialog):
         self.show()
 
     def checkName(self, txt):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True if len(txt) > 2 else False)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True if len(str.strip(txt)) > 2 else False)

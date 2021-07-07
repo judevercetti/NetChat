@@ -1,22 +1,22 @@
-import sys, time
+from dialogs import OnlineDialog
 from PyQt5.QtWidgets import * #QLabel, QWidget, QHBoxLayout, QVBoxLayout, QListWidgetItem
 from PyQt5.QtGui import *
-from PyQt5 import QtCore, uic
+from PyQt5 import QtCore, uic, sip
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+import time
 
-UID = 'kagwa69'
 
 allmessages = {
     "y545trsg": [
         {
             "content": "hi",
-            "time": "9:50 pm",
+            "time": 1625633425.7058942,
             "sender": "y545trsg",
             "receiver": "kagwa69"
         },
         {
             "content": "oh hello, wats gud",
-            "time": "9:55 pm",
+            "time": 1625633425.7058942,
             "sender": "kagwa69",
             "receiver": "y545trsg"
         }
@@ -24,8 +24,16 @@ allmessages = {
     "rn35kjn": [
         {
             "content": "whats gud bwoy",
-            "time": "9:50 pm",
+            "time": 1625633425.7058942,
             "sender": "rn35kjn",
+            "receiver": "kagwa69"
+        }
+    ],
+    "pronto": [
+        {
+            "content": "Ogamba chi",
+            "time": 1625633425.7058942,
+            "sender": "pronto",
             "receiver": "kagwa69"
         }
     ]
@@ -43,12 +51,12 @@ class PaperStream(QObject):
         self.docs = [
             {
                 "id": "y545trsg",
-                "name": "kagwa",
+                "username": "kagwa",
                 "last_message": "oi oi oi matte"
             },
             {
                 "id": "rn35kjn",
-                "name": "mundo",
+                "username": "mundo",
                 "last_message": "wallo maria"
             }
         ]
@@ -70,8 +78,8 @@ class PapersListwidget(QWidget):
         self.msg_layout = QVBoxLayout()
         self.paper_id = paper['id']
         # self.paper_text = paper['content']
-        self.paper_type_label = QLabel(f'{paper["name"]}')
-        self.paper_form_label = QLabel(f'Form {paper["last_message"]}')
+        self.paper_type_label = QLabel(f'{paper["username"]}')
+        self.paper_form_label = QLabel(f'{paper["last_message"]}')
 
         self.msg_layout.addWidget(self.paper_type_label)
         self.msg_layout.addWidget(self.paper_form_label)
@@ -87,8 +95,9 @@ class Messages(QWidget):
         self.myQListWidget = self.parent().users_listwidget # QListWidget(self)
         self.paper_content = self.parent().chatroom_listwidget
         self.myQListWidget.itemClicked.connect(self.setCurrentPaper)
-        self.parent().sendmsg_button.clicked.connect(self.updatePaper)
-        self.parent().onlineusers_button.clicked.connect(self.createPaper)
+
+        self.parent().mymsg_textEdit.textChanged.connect(self.checkMessage)
+        self.parent().sendmsg_button.clicked.connect(self.sendMessage)
 
 
         self.thread = QThread()
@@ -119,22 +128,32 @@ class Messages(QWidget):
         self.current_paper_id = myobj.paper_id
 
         self.parent().username_label.setText(myobj.paper_type_label.text())
-        for mymsg in allmessages[self.current_paper_id]:
-            self.userMessageList(mymsg)
+
+        try:
+            for mymsg in allmessages[self.current_paper_id]:
+                self.userMessageList(mymsg)
+        except:
+            print("no msgs")
 
     def userMessageList(self, mymsg):
-            myQCustomQWidget = ChatRoomListWidget(mymsg['content'], mymsg['time'], mymsg['sender'])
+            myQCustomQWidget = ChatRoomListWidget(mymsg['content'], mymsg['time'], mymsg['sender'], self.parent().current_user['uid'])
             myQListWidgetItem = QListWidgetItem(self.paper_content)
             myQListWidgetItem.setSizeHint(myQCustomQWidget.sizeHint())
             self.paper_content.addItem(myQListWidgetItem)
             self.paper_content.setItemWidget(myQListWidgetItem, myQCustomQWidget)
 
+    def sendMessage(self):
+        msg = {
+            "content": self.parent().mymsg_textEdit.toPlainText(),
+            "time": time.time(),
+            "sender": self.parent().current_user['uid'],
+            "receiver": self.current_paper_id
+        }
+        allmessages[self.current_paper_id].append(msg)
+        self.userMessageList(msg)
 
-
-    def updatePaper(self):
-        firestore.client().collection('papers').document(self.current_paper_id).update({
-            u'content': self.paper_content.toPlainText()
-        })
+    def checkMessage(self, txt):
+        self.parent().sendmsg_button.setEnabled(True if len(str.strip(txt)) > 0 else False)
 
     @pyqtSlot(str)
     def mans(self, txt):
@@ -155,15 +174,6 @@ class Messages(QWidget):
         allmessages[msg['id']].append(msg)
         if msg['id'] == self.current_paper_id:
             self.userMessageList(msg)
-
-
-class OnlineDialog(QDialog):
-    def __init__(self):
-        super(OnlineDialog, self).__init__()
-        uic.loadUi('UI/onlineUI.ui', self)
-
-        self.show()
-
 
 
 class AddPaper(QDialog):
@@ -196,14 +206,17 @@ class AddPaper(QDialog):
 
 
 class ChatRoomListWidget(QWidget):
-    def __init__(self, msgtext, msgtime, msgsender):
+    def __init__(self, msgtext, msgtime, msgsender, currentuser):
         super().__init__()
         self.align_layout = QHBoxLayout()
         self.msg_layout = QVBoxLayout()
         self.msg_text = QLabel(msgtext)
+                
+        t = time.localtime(msgtime)
+        msgtime = time.strftime("%I:%M %p", t)
         self.msg_time = QLabel(msgtime)
 
-        if msgsender == UID: 
+        if msgsender == currentuser:
             self.align_layout.addStretch(1)
             self.msg_text.setAlignment(QtCore.Qt.AlignRight)
             self.msg_time.setAlignment(QtCore.Qt.AlignRight)
