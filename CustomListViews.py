@@ -190,19 +190,6 @@ class AddPaper(QDialog):
         ))
         self.show()
 
-    def hmm(self):
-        print(f'oi hmm')
-
-    def uploadPaper(self, ptype, pform, psubject, pyear, pcontent):
-        db = firestore.client()
-        db.collection('papers').add({
-            u'type': ptype,
-            u'form': int(pform),
-            u'subject': psubject,
-            u'year': int(pyear),
-            u'content': pcontent
-        })
-        
 
 
 class ChatRoomListWidget(QWidget):

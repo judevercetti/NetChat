@@ -4,7 +4,7 @@ from PyQt5 import uic, sip
 
 from views import UI_Window
 from cam import Camera
-from network import NetFinder, Server, OnlineFinder
+from network import NetFinder, Server
 from CustomListViews import Messages
 from dialogs import *
 from TopBar import TitleBar
@@ -50,18 +50,22 @@ class NetCrawler(QMainWindow):
         self.onlineusers_button.clicked.connect(self.online_dialog.show)
         self.online_dialog.open_chat.connect(self.messages.fillPaperList)
 
-        self.thread_finder = QThread()
-        self.online_finder = NetFinder()
-        self.online_finder.moveToThread(self.thread_finder)
-        self.thread_finder.started.connect(self.online_finder.run)
-        self.online_finder.new_client.connect(self.online_dialog.addOnlineUser)
-        self.thread_finder.start()
 
     
     def setupApp(self):
         self.current_user['username'] = self.login.username_lineedit.text()
         print(self.current_user['uid'])
+        self.startNetFinder()
         self.show()
+
+
+    def startNetFinder(self):
+        self.thread_finder = QThread()
+        self.online_finder = NetFinder(self.current_user)
+        self.online_finder.moveToThread(self.thread_finder)
+        self.thread_finder.started.connect(self.online_finder.run)
+        self.online_finder.new_client.connect(self.online_dialog.addOnlineUser)
+        self.thread_finder.start()
 
 
 
