@@ -24,7 +24,7 @@ class NetCrawler(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi("UI/MainUI.ui", self)
-        # self.titlebar_layout.addWidget(TitleBar(self))
+        self.titlebar_layout.addWidget(TitleBar(self))
 
         self.current_user['uid'] = platform.node()
 
